@@ -16,7 +16,7 @@ from parsec import  regex, eof, many1, many, string, generate, sepBy1, \
                     one_of, skip, none_of, times, ParseError, count, \
                     separated, letter, digit, optional
 
-from pyibisami.ibis_model import Component, Model
+from .ibis_model import Component, Model
 
 DBG = False
 

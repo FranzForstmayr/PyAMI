@@ -17,7 +17,7 @@ import click
 import em
 from numpy import floor
 
-from pyibisami.ami_model import AMIModel
+from .ami_model import AMIModel
 
 def plot_name(tst_name, n=0):
     """Plot name generator keeps multiple tests from overwriting eachother's plots."""
