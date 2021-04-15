@@ -233,15 +233,34 @@ def ramp():
     lines = yield count(ramp_line, 2)
     return dict(lines)
 
+@generate("[Rising Waveform]")
+def waveform():
+    "Parse [Rising/Falling Waveform]."
+    res = yield many1(node(Model_keywords, IBIS_keywords, debug=DBG))
+    lines = yield many1(vi_line)
+    return dict(res + [('tv', lines)])
+
+@generate("[Model Spec]")
+def model_spec():
+    "Parse [Model Spec]."
+    res = yield many1(node([], Model_keywords, debug=DBG))
+    return res
+
 Model_keywords = {
     "pulldown": many1(vi_line),
     "pullup": many1(vi_line),
     "ramp": ramp,
+    "rising_waveform": waveform,
+    "falling_waveform": waveform,
     "algorithmic_model": many1(ex_line) << keyword('end_algorithmic_model'),
     "voltage_range": typminmax,
+    "gnd_clamp_reference": typminmax,
+    "gnd_clamp": many1(vi_line),
+    "power_clamp_reference": typminmax,
     "temperature_range": typminmax,
     "ground_clamp": many1(vi_line),
     "power_clamp": many1(vi_line),
+    "model_spec": model_spec
 }
 
 @generate("[Model]")
