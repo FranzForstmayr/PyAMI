@@ -170,7 +170,7 @@ rparen = lexeme(string(")"))
 number = lexeme(regex(r"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?"))
 integ  = lexeme(regex(r"[-+]?[0-9]+"))
 nat    = lexeme(regex(r"[0-9]+"))
-tap_ix = integ.parsecmap(int2tap)
+tap_ix = integ
 symbol = lexeme(regex(r"[a-zA-Z_][^\s()]*"))
 true = lexeme(string("True")).result(True)
 false = lexeme(string("False")).result(False)
@@ -245,7 +245,7 @@ def proc_branch(branch):
             and (param_tags[1][0] in AMIParameter._param_def_tag_procs)
         ):
             try:
-                results = ("", {param_name: AMIParameter(param_name, param_tags)})
+                results = ("", {param_name: param_tags})
             except AMIParamError as err:
                 results = (str(err), {})
         elif param_name == "Description":

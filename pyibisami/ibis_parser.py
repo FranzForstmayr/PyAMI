@@ -16,8 +16,6 @@ from parsec import  regex, eof, many1, many, string, generate, sepBy1, \
                     one_of, skip, none_of, times, ParseError, count, \
                     separated, letter, digit, optional
 
-from .ibis_model import Component, Model
-
 DBG = False
 
 # Parser Definitions
@@ -43,15 +41,16 @@ def rest_line():
     chars = yield (many(none_of("\n\r")) << ignore)  # So that we still function as a lexeme.
     return "".join(chars)
 
-skip_line     = lexeme(rest_line).result('(Skipped.)')
-name_only     = regex(r"[_a-zA-Z0-9/\.()#-]+")
+skip_line     = lexeme(rest_line).result(None)
+name_only     = regex(r"[_a-zA-Z0-9/\.()+#-]+")
+filename      = regex(r"[_a-zA-Z0-9/\.()#\s]+\.ibs")
 name          = word(name_only)
 symbol        = lexeme(regex(r"[a-zA-Z_][^\s()\[\]]*"))
 true          = lexeme(string("True")).result(True)
 false         = lexeme(string("False")).result(False)
 quoted_string = lexeme(regex(r'"[^"]*"'))
 fail          = one_of("")
-skip_keyword  = (skip_line >> many(none_of("[") >> skip_line)).result('(Skipped.)')  # Skip over everything until the next keyword begins.
+skip_keyword  = (skip_line >> many(none_of("[") >> skip_line)).result(None)  # Skip over everything until the next keyword begins.
 
 IBIS_num_suf = {
     'T': 'e12',
@@ -169,7 +168,10 @@ def param():
     pname = yield regex(r"^[a-zA-Z]\w*", re.MULTILINE)  # Parameters must begin with a letter in column 1.
     if DBG:
         print(pname)
-    res = yield (regex(r"\s*") >> ((word(string("=")) >> number) | typminmax | name | rest_line))
+    if pname.lower() == 'model_type':
+        res = yield (regex(r"\s*") >> name)
+    else:
+        res = yield (regex(r"\s*") >> ((word(string("=")) >> number) | typminmax | name | rest_line))
     yield ignore  # So that ``param`` functions as a lexeme.
     return (pname.lower(), res)
 
@@ -249,7 +251,7 @@ def model():
     if DBG:
         print("    ", nm)
     res = yield many1(node(Model_keywords, IBIS_keywords, debug=DBG))
-    return {nm: Model(dict(res))}
+    return {nm: dict(res)}
 
 # [Component]
 rlc = lexeme(string("R_pin") | string("L_pin") | string("C_pin"))
@@ -303,7 +305,7 @@ def comp():
     "Parse [Component]."
     nm = yield lexeme(name)
     res = yield many1(node(Component_keywords, IBIS_keywords, debug=DBG))
-    return {nm: Component(dict(res))}
+    return {nm: dict(res)}
 
 # [Model Selector]
 @generate("[Model Selector]")
@@ -342,7 +344,7 @@ IBIS_kywrd_parsers.update({
     "model":          model,
     "end":            end,
     "ibis_ver":       lexeme(number),
-    "file_name":      lexeme(name),
+    "file_name":      lexeme(filename),
     "file_rev":       lexeme(name),
     "date":           rest_line,
     "component":      comp,

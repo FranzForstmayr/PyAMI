@@ -18,7 +18,7 @@ from traitsui.api import Item, View, ModalButtons, Group, spring
 from chaco.api    import ArrayPlotData, Plot
 from enable.component_editor import ComponentEditor
 
-from .ibis_base import ComponentBase, ModelBase
+from .ibis_component import ComponentBase, ModelBase
 
 DBG = False
 
